@@ -79,6 +79,7 @@ void update_hash(FILE *read_stream, uint8_t *hash);
 void check(FILE *read_stream, uint64_t current_egg, int mode);
 void change_perm(FILE *read_stream, char *path, uint64_t current_egg);
 void copy_content(FILE *read_stream, FILE *write_stream, int format, uint64_t current_egg, int mode);
+void dumpbit(FILE *read_stream, FILE *write_stream, int format, int len);
 
 // print the files & directories stored in egg_pathname (subset 0)
 //
@@ -559,20 +560,19 @@ void copy_content(FILE *read_stream, FILE *write_stream,
 
     // Copy content from read_stream to write_stream
     if (format == FMT_7) {
-        char *buffer = malloc(BIT * 7);
-
         if (!mode) {
             len = fmt_len(format, len);
         }
         
-        free(buffer);
+        dumpbit(read_stream, write_stream, format, len); 
+
     } else if (format == FMT_6) {
         char *buffer = malloc(BIT * 6);
 
         if (!mode) {
             len = fmt_len(format, len);
         }
-        
+
         free(buffer);
     } else {
         for (int i = 0; i < len; i++) {
@@ -875,3 +875,46 @@ uint64_t fmt_len(int format, uint64_t cont_len) {
 
     return length;
 }
+
+void dumpbit(FILE *read_stream, FILE *write_stream,  int format, int len) {
+    int format = 8;
+    
+    if (format == FMT_7) {
+        format = 7;
+    } else if (format == FMT_6) {
+        format = 6;
+    }
+    
+    char *buffer = malloc(BIT * format);
+
+    int byte;
+    int count = 0;
+
+    for (int i = 0; i < len; i++) {
+        byte = fgetc(read_stream);
+        for (int j = format; j > 0; j--) {
+            buffer[count] = (byte >> j) & 1; 
+            count++;
+        }
+
+        if (count == format * BIT) {
+            int done = 1;
+            int out = 0;
+            for (; done <= format; done++) {
+                for (int k = 0; k < format; k++) {
+                    count = count - k;
+                    int bit = buffer[count];
+                    bit = bit << k;
+                    out |= bit;
+                }
+                fputc(out, write_stream);
+            }
+        } 
+    }
+    
+    if (count != 0) {
+    } 
+    
+    free(buffer);
+}
+
