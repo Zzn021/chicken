@@ -877,42 +877,35 @@ uint64_t fmt_len(int format, uint64_t cont_len) {
 }
 
 void dumpbit(FILE *read_stream, FILE *write_stream,  int format, int len) {
-    int format = 8;
-    
-    if (format == FMT_7) {
-        format = 7;
-    } else if (format == FMT_6) {
-        format = 6;
-    }
-    
     char *buffer = malloc(BIT * format);
 
     int byte;
     int count = 0;
-
+  
     for (int i = 0; i < len; i++) {
         byte = fgetc(read_stream);
-        for (int j = format; j > 0; j--) {
-            buffer[count] = (byte >> j) & 1; 
+        for (int j = format; j > 0; j++) {
+            int bit = (byte >> j) & 1;
+            buffer[count] = bit;
             count++;
         }
-
-        printf("%s\n", buffer);
-
-        if (count == format * BIT) {
-            int done = 1;
-            int out = 0;
-            for (; done <= format; done++) {
+        
+        if (count = format * BIT) {
+            int out;
+            while (count != 0) {
                 for (int k = 0; k < format; k++) {
-                    count = count - k;
-                    int bit = buffer[count];
-                    bit = bit << k;
-                    out |= bit;
+                    // Get the bit pattern for a single word
+                    /**
+                     * Total: 8 bit with the last bit indicating
+                     * the start of the next word of the original
+                     * file.
+                     */
+                    
                 }
-                fputc(out, write_stream);
             }
-        } 
+        }
     }
+
     
     free(buffer);
 }
