@@ -897,6 +897,8 @@ void dumpbit(FILE *read_stream, FILE *write_stream,  int format, int len) {
             count++;
         }
 
+        printf("%s\n", buffer);
+
         if (count == format * BIT) {
             int done = 1;
             int out = 0;
@@ -911,9 +913,6 @@ void dumpbit(FILE *read_stream, FILE *write_stream,  int format, int len) {
             }
         } 
     }
-    
-    if (count != 0) {
-    } 
     
     free(buffer);
 }
